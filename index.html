@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub PR Checker</title>
+</head>
+<body>
+    <h1>GitHub Beginner-friendly PR Checker</h1>
+    <div>
+        <input id="repoInput" type="text" placeholder="Enter repo (e.g. owner/repo-name)">
+        <button onclick="checkPRs()">Check PRs</button>
+    </div>
+    <ul id="prList"></ul>
+
+    <script>
+        function checkPRs() {
+            const repo = document.getElementById('repoInput').value;
+            const prList = document.getElementById('prList');
+
+            // Clear previous results
+            prList.innerHTML = '';
+
+            fetch(`https://api.github.com/repos/${repo}/pulls`)
+                .then(response => response.json())
+                .then(data => {
+                    const beginnerPRs = data.filter(pr => 
+                        pr.labels.some(label => 
+                            ["good first issue", "beginner-friendly"].includes(label.name.toLowerCase())
+                        )
+                    );
+
+                    beginnerPRs.forEach(pr => {
+                        const listItem = document.createElement('li');
+                        const link = document.createElement('a');
+                        link.href = pr.html_url;
+                        link.target = '_blank';
+                        link.textContent = pr.title;
+                        listItem.appendChild(link);
+                        prList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching PRs:", error);
+                });
+        }
+    </script>
+</body>
+</html>
